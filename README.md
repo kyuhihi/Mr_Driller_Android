@@ -24,10 +24,16 @@ Modern Driller는 클래식 퍼즐 액션 게임 "미스터 드릴러"에 영감을 받아 제작된 안드
 ## 예상 게임 실행 흐름
 
 1. **메인 메뉴**에서 게임 시작 버튼을 누름.
+![TitleMenu](https://github.com/kyuhihi/Mr_Driller_Android/blob/main/For%20Readme/TitleMenu.png)
 2. **게임 플레이** 시작 시, 레벨 선택
+![LevelSelect](https://github.com/kyuhihi/Mr_Driller_Android/blob/main/For%20Readme/LevelSelect.png)
 3. **드릴링**을 시작하여 블록을 뚫고 내려감
+![Drilling1](https://github.com/kyuhihi/Mr_Driller_Android/blob/main/For%20Readme/Drilling1.png)
 4. **산소 탱크** 수집과 **장애물** 회피
-5. **레벨 클리어** 시, 스코어 확인 
+![Item](https://github.com/kyuhihi/Mr_Driller_Android/blob/main/For%20Readme/GetItem%26DecreaseHPbyBlockingBlock.gif)
+5. **레벨 클리어** 시, 스코어 확인
+![Result](https://github.com/kyuhihi/Mr_Driller_Android/blob/main/For%20Readme/Result.png)
+
 
 ## 개발 일정
 
