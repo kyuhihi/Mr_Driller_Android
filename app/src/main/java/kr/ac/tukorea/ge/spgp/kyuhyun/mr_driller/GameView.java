@@ -3,27 +3,54 @@ package kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller;
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.util.Log;
+import android.view.Choreographer;
 import android.view.View;
 
-public class GameView extends View {
-    private final Activity activity;
+import android.util.AttributeSet;
+
+import java.util.ArrayList;
+
+public class GameView extends View implements Choreographer.FrameCallback{
+    private static final String TAG = GameView.class.getSimpleName();
+    private Activity activity;
+
+    private final ArrayList<GameObject> m_GameObjects = new ArrayList<>();
     public GameView(Context context) {
         super(context);
-        this.activity = (Activity)context;
+        if(context instanceof Activity) {
+            this.activity = (Activity) context;
+        }
 
         borderPaint = new Paint();
         borderPaint.setStyle(Paint.Style.STROKE);
-        borderPaint.setStrokeWidth(0.1f);
-        borderPaint.setColor(Color.RED);
+        borderPaint.setStrokeWidth(0.3f);
+        borderPaint.setColor(Color.WHITE);
 
+        Resources res = getResources();
+        Bitmap BackGroundBitmap = BitmapFactory.decodeResource(res,R.mipmap.name_korea);
+        GameObject pGameObjet = new MainGame_BackGround(BackGroundBitmap);
+
+        m_GameObjects.add(pGameObjet);
         setFullScreen();
+
+        scheduleUpdate();
     }
+
+    private void scheduleUpdate() {
+        Choreographer.getInstance().postFrameCallback(this);
+    }
+
+
 
     public void setFullScreen() {
         int flags =  View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
@@ -69,11 +96,42 @@ public class GameView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+        canvas.drawColor(Color.argb(255,61,157,217));
+
         canvas.save();
         canvas.concat(transformMatrix);
         canvas.drawRect(borderRect, borderPaint);
+        for(GameObject GameObj : m_GameObjects)
+        {
+            GameObj.draw(canvas);
+        }
+
         canvas.restore();
     }
 
+    private long previousNanos = 0;
+    private float elapsedSeconds;
+    @Override
+    public void doFrame(long nanos) {
+        long elapsedNanos = nanos - previousNanos;
+        elapsedSeconds = elapsedNanos / 1_000_000_000f;
+        if (previousNanos != 0) {
+            update();
+        }
+        invalidate();
+        if (isShown()) {
+            scheduleUpdate();
+        }
+        previousNanos = nanos;
+    }
 
+    private void update() {
+        Log.d(TAG, "updateCall" + elapsedSeconds);
+        for(GameObject pGameObject:m_GameObjects)
+        {
+            pGameObject.update(elapsedSeconds);
+        }
+
+    }
 }
