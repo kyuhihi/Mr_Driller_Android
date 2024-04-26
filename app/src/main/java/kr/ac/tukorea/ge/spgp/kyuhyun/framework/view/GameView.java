@@ -105,7 +105,8 @@ public class GameView extends View implements Choreographer.FrameCallback {
 
         if (BuildConfig.DEBUG) {
             int fps = (int) (1.0f / elapsedSeconds);
-            canvas.drawText("FPS: " + fps, 100f, 200f, fpsPaint);
+            int count = scene.count();
+            canvas.drawText("FPS: " + fps + " objs: " + count, 100f, 200f, fpsPaint);
         }
     }
 

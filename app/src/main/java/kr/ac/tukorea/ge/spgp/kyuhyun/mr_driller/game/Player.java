@@ -23,7 +23,7 @@ public class Player extends Sprite {
 
     public Player(){
         super(R.mipmap.player_test);
-        setPosition(Metrics.width / 2, Metrics.height - 3, RADIUS);
+        setPosition(Metrics.width / 2, Metrics.height /2, RADIUS);
         setTargetX(x);
         targetBmp = BitmapPool.get(R.mipmap.fighter_target);
 

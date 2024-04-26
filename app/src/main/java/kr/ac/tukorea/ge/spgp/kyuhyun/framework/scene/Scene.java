@@ -1,13 +1,19 @@
 package kr.ac.tukorea.ge.spgp.kyuhyun.framework.scene;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.util.Log;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
 
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.activity.GameActivity;
+import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IBoxCollidable;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IGameObject;
+import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IRecyclable;
+import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.BuildConfig;
 
 public class Scene {
 
@@ -51,25 +57,89 @@ public class Scene {
         scene.onResume();
     }
 
+    public static void popAll() {
+        int count = stack.size();
+        for (int i = count - 1; i >= 0; i--) {
+            Scene scene = stack.get(i);
+            scene.onEnd();
+        }
+        stack.clear();
+        finishActivity();
+    }
+
     public static void finishActivity() {
         //GameView gameView = null;
         //gaveView.getActivity().finish();
         GameActivity.activity.finish();
     }
 
-    protected final ArrayList<IGameObject> gameObjects = new ArrayList<>();
-
-    public void update(float elapsedSeconds) {
-        int count = gameObjects.size();
-        for (int i = count - 1; i >= 0; i--) {
-            IGameObject gameObject = gameObjects.get(i);
-            gameObject.update(elapsedSeconds);
+    public static void pauseTop() {
+        Log.i(TAG, "Pausing Game");
+        Scene scene = top();
+        if (scene != null) {
+            scene.onPause();
         }
     }
 
+    public static void resumeTop() {
+        Log.i(TAG, "Resuming Game");
+        Scene scene = top();
+        if (scene != null) {
+            scene.onResume();
+        }
+    }
+
+    protected ArrayList<ArrayList<IGameObject>> layers = new ArrayList<>();
+    public int count() {
+        int count = 0;
+        for (ArrayList<IGameObject> objects: layers) {
+            count += objects.size();
+        }
+        return count;    }
+    protected <E extends Enum<E>> void initLayers(E enumCount) {
+        layers = new ArrayList<>();
+        int layerCount = enumCount.ordinal();
+        for (int i = 0; i < layerCount; i++) {
+            layers.add(new ArrayList<>());
+        }
+    }
+
+    public <E extends Enum<E>> ArrayList<IGameObject> objectsAt(E layerEnum) {
+        return layers.get(layerEnum.ordinal());
+    }
+
+    public void update(float elapsedSeconds) {
+        for (ArrayList<IGameObject> objects : layers) {
+            int count = objects.size();
+            for (int i = count - 1; i >= 0; i--) {
+                IGameObject gameObject = objects.get(i);
+                gameObject.update(elapsedSeconds);
+            }
+        }
+    }
+
+    protected static Paint bboxPaint;
     public void draw(Canvas canvas) {
-        for (IGameObject gameObject : gameObjects) {
-            gameObject.draw(canvas);
+        for (ArrayList<IGameObject> objects: layers) {
+            for (IGameObject gobj : objects) {
+                gobj.draw(canvas);
+            }
+        }
+        if (BuildConfig.DEBUG) {
+            if (bboxPaint == null) {
+                bboxPaint = new Paint();
+                bboxPaint.setStyle(Paint.Style.STROKE);
+                bboxPaint.setStrokeWidth(0.1f);
+                bboxPaint.setColor(Color.RED);
+            }
+            for (ArrayList<IGameObject> objects: layers) {
+                for (IGameObject gobj : objects) {
+                    if (gobj instanceof IBoxCollidable) {
+                        RectF rect = ((IBoxCollidable) gobj).getCollisionRect();
+                        canvas.drawRect(rect, bboxPaint);
+                    }
+                }
+            }
         }
     }
 
@@ -97,8 +167,16 @@ public class Scene {
 
     //////////////////////////////////////////////////
     // Game Object Management
-    public void add(IGameObject gameObject) {
-        gameObjects.add(gameObject);
-        Log.d(TAG, gameObjects.size() + " objects in " + getClass().getSimpleName());
+    public <E extends Enum<E>> void add(E layer, IGameObject gameObject) {
+        ArrayList<IGameObject> objects = layers.get(layer.ordinal());
+        objects.add(gameObject);
+    }
+
+    public <E extends Enum<E>> void remove(E layer, IGameObject gameObject) {
+        ArrayList<IGameObject> objects = layers.get(layer.ordinal());
+        objects.remove(gameObject);
+        if (gameObject instanceof IRecyclable) {
+            RecycleBin.collect((IRecyclable) gameObject);
+        }
     }
 }
