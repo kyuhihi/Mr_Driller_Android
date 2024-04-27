@@ -18,22 +18,23 @@ public class Player extends Sprite {
     private static final float SPEED = 5.0f;
     private static final float TARGET_RADIUS = 0.5f;
     private final Bitmap targetBmp;
-    private float targetX;
+    private float targetX,targetY;
     private RectF targetRect = new RectF() ;
 
     public Player(){
         super(R.mipmap.player_test);
         setPosition(Metrics.width / 2, Metrics.height /2, RADIUS);
-        setTargetX(x);
+        setTargetXY(x,y);
         targetBmp = BitmapPool.get(R.mipmap.fighter_target);
 
     }
 
-    private void setTargetX(float x) {
+    private void setTargetXY(float x,float y) {
         targetX = Math.max(RADIUS, Math.min(x, Metrics.width - RADIUS));
+        targetY = Math.max(RADIUS, Math.min(y, Metrics.height - RADIUS));
         targetRect.set(
-                targetX - TARGET_RADIUS, y - TARGET_RADIUS,
-                targetX + TARGET_RADIUS, y + TARGET_RADIUS
+                targetX - TARGET_RADIUS, targetY - TARGET_RADIUS,
+                targetX + TARGET_RADIUS, targetY + TARGET_RADIUS
         );
     }
     public void draw(Canvas canvas) {
@@ -68,7 +69,7 @@ public class Player extends Sprite {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE:
                 float[] pts = Metrics.fromScreen(event.getX(), event.getY());
-                setTargetX(pts[0]);
+                setTargetXY(pts[0],pts[1]);
                 return true;
         }
         return false;

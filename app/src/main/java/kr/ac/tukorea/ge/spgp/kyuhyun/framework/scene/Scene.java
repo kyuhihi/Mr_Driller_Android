@@ -136,7 +136,7 @@ public class Scene {
                 for (IGameObject gobj : objects) {
                     if (gobj instanceof IBoxCollidable) {
                         RectF rect = ((IBoxCollidable) gobj).getCollisionRect();
-                        canvas.drawRect(rect, bboxPaint);
+                        //canvas.drawRect(rect, bboxPaint);
                     }
                 }
             }

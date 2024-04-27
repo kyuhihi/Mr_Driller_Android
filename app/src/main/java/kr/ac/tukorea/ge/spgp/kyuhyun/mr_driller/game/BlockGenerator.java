@@ -1,8 +1,8 @@
 package kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.game;
 
 import android.graphics.Canvas;
-import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IGameObject;
@@ -12,17 +12,29 @@ public class BlockGenerator implements IGameObject {
     private static final String TAG = BlockGenerator.class.getSimpleName();
     private final Random random = new Random();
     private float TempTime = 0;
-    boolean bTest = false;
+    private boolean bInitialize = false;
 
+    private void Initialize() {//6개의 블럭층을 생성.
+        Scene scene = Scene.top();
+        if (scene == null) return;
+        for (int j = 0; j < 6; j++)
+        {
+            for (int i = 0; i < 7; i++) {
+                //scene.add(MainScene.Layer.block, Block.get(Block.BLOCK_TYPE.BLOCK_BLUE, i));
+                Block tTempBlock = Block.get(Block.BLOCK_TYPE.toBlockType(random.nextInt(Block.BLOCK_TYPE.END.ordinal())), i);
+                tTempBlock.SetInitY(j);
+                scene.add(MainScene.Layer.block, tTempBlock);
+            }
+        }
+    }
     @Override
     public void update(float elapsedSeconds) {
-        if(bTest == false) {
-            generate();
-            bTest =true;
+        if(bInitialize == false) {
+            Initialize();
+            bInitialize =true;
             return;
         }
-        else
-            return;
+
         //TempTime -= elapsedSeconds;
         //if (TempTime < 0) {
         //    generate();
@@ -42,6 +54,5 @@ public class BlockGenerator implements IGameObject {
 
     @Override
     public void draw(Canvas canvas) {
-
     }
 }

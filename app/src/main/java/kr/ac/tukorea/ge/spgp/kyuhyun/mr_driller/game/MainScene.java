@@ -22,6 +22,9 @@ public class MainScene extends Scene {
         add(Layer.controller, new BlockGenerator());
         add(Layer.controller, new CollisionChecker(this));
 
+        add(Layer.bg, new Sky(R.mipmap.blue,0.f));
+        add(Layer.bg, new Cloud(R.mipmap.clouds,0.4f));
+
         this.Player = new Player();
         add(Layer.player,this.Player);
     }
