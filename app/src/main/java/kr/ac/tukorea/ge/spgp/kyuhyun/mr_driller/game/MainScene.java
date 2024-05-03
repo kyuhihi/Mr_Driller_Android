@@ -2,7 +2,6 @@ package kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.game;
 
 import android.view.MotionEvent;
 
-import kr.ac.tukorea.ge.spgp.kyuhyun.framework.objects.JoyStick;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.objects.Score;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.scene.Scene;
 import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.R;
@@ -27,6 +26,7 @@ public class MainScene extends Scene {
 
         this.Player = new Player();
         add(Layer.player,this.Player);
+
     }
     public void addScore(int amount) {
         score.add(amount);

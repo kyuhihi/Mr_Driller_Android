@@ -13,6 +13,7 @@ import kr.ac.tukorea.ge.spgp.kyuhyun.framework.activity.GameActivity;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IBoxCollidable;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IGameObject;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IRecyclable;
+import kr.ac.tukorea.ge.spgp.kyuhyun.framework.view.Metrics;
 import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.BuildConfig;
 
 public class Scene {
@@ -36,6 +37,7 @@ public class Scene {
         stack.add(scene);
         scene.onStart();
     }
+
     public void push() {
         push(this);
     }
@@ -90,12 +92,14 @@ public class Scene {
     }
 
     protected ArrayList<ArrayList<IGameObject>> layers = new ArrayList<>();
+
     public int count() {
         int count = 0;
         for (ArrayList<IGameObject> objects: layers) {
             count += objects.size();
         }
         return count;    }
+
     protected <E extends Enum<E>> void initLayers(E enumCount) {
         layers = new ArrayList<>();
         int layerCount = enumCount.ordinal();
@@ -120,6 +124,9 @@ public class Scene {
 
     protected static Paint bboxPaint;
     public void draw(Canvas canvas) {
+        if (this.clipsRect()) {
+            canvas.clipRect(0, 0, Metrics.width, Metrics.height);
+        }
         for (ArrayList<IGameObject> objects: layers) {
             for (IGameObject gobj : objects) {
                 gobj.draw(canvas);
@@ -129,14 +136,13 @@ public class Scene {
             if (bboxPaint == null) {
                 bboxPaint = new Paint();
                 bboxPaint.setStyle(Paint.Style.STROKE);
-                bboxPaint.setStrokeWidth(0.1f);
                 bboxPaint.setColor(Color.RED);
             }
             for (ArrayList<IGameObject> objects: layers) {
                 for (IGameObject gobj : objects) {
                     if (gobj instanceof IBoxCollidable) {
                         RectF rect = ((IBoxCollidable) gobj).getCollisionRect();
-                        //canvas.drawRect(rect, bboxPaint);
+                        canvas.drawRect(rect, bboxPaint);
                     }
                 }
             }
@@ -165,8 +171,13 @@ public class Scene {
         return false;
     }
 
+    public boolean clipsRect() {
+        return true;
+    }
+
     //////////////////////////////////////////////////
     // Game Object Management
+
     public <E extends Enum<E>> void add(E layer, IGameObject gameObject) {
         ArrayList<IGameObject> objects = layers.get(layer.ordinal());
         objects.add(gameObject);
@@ -179,4 +190,5 @@ public class Scene {
             RecycleBin.collect((IRecyclable) gameObject);
         }
     }
+
 }
