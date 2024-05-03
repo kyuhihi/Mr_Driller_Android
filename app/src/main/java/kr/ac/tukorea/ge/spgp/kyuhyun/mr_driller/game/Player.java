@@ -26,7 +26,7 @@ import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.R;
 
 public class Player extends SheetSprite implements IBoxCollidable {
     private static Map<String, ArrayList<Rect>> player_sheet_map; //first
-    private static final float RADIUS = 0.5f;
+    private static final float RADIUS = 0.8f;
     private static final float SPEED = 5.0f;
     private static final float TARGET_RADIUS = 0.5f;
     private float targetX,targetY;
@@ -37,8 +37,6 @@ public class Player extends SheetSprite implements IBoxCollidable {
         idle, drill, walk, crush,angel, revive,jump, bo, COUNT
     }
     State state = State.idle;
-    // 파일에서 읽어온 문자열을 저장할 이중 배열
-    ArrayList<String>[] stateStrings = new ArrayList[State.COUNT.ordinal()];
 
 
 
@@ -57,7 +55,7 @@ public class Player extends SheetSprite implements IBoxCollidable {
                     int x = frameData.getInt("x");
                     int y = frameData.getInt("y");
                     int w = frameData.getInt("w");
-                    int h = frameData.getInt("h");
+                    int h = 40;//frameData.getInt("h");
 
                     Rect rect = new Rect(x, y, x + w, y + h);
                     rectList.add(rect);
@@ -68,38 +66,7 @@ public class Player extends SheetSprite implements IBoxCollidable {
             player_sheet_map.put(category, rectList);
         }
 
-        // 각 상태에 대한 ArrayList 초기화
-        for (int i = 0; i < State.COUNT.ordinal(); i++) {
-            stateStrings[i] = new ArrayList<>();
-        }
 
-        // 파일에서 읽어와서 분류
-        try (BufferedReader reader = new BufferedReader(new FileReader("keys.txt"))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // 파일에서 읽은 각 문자열을 '_'를 기준으로 상태와 이름으로 분리
-                String[] parts = line.split("_");
-                if (parts.length == 2) {
-                    String stateStr = parts[1];
-                    try {
-                        // 문자열을 해당하는 상태로 변환
-                        State state = State.valueOf(stateStr);
-                        // 해당 상태에 문자열 추가
-                        stateStrings[state.ordinal()].add(line);
-                    } catch (IllegalArgumentException e) {
-                        // State.valueOf()에서 IllegalArgumentException이 발생하면 해당 상태가 없는 것이므로 무시
-                    }
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        // 결과 출력
-        for (int i = 0; i < State.COUNT.ordinal(); i++) {
-            State state = State.values()[i];
-            System.out.println(state + ": " + stateStrings[i]);
-        }
     }
     public static void writeKeysToFile(Context context, String filename) {
         try {
@@ -146,14 +113,73 @@ public class Player extends SheetSprite implements IBoxCollidable {
         } else {
             adjx = Math.max(RADIUS, Math.min(x, Metrics.width - RADIUS));
         }
+
         if (adjx != x) {
-            setPosition(adjx, y, RADIUS);
             dx = 0;
         }
+        collisionRect.set(dstRect);
+        if(dx == 0)
+            setState(State.idle);
+        else
+            setState(State.walk);
+
+        if (adjx != x) {
+            setPosition(adjx, y, RADIUS);//,calculateHeight(RADIUS,srcRects.get(index)));
+        }
+
+    }
+    // Radius가 주어졌을 때, height 값을 계산하는 메서드
+    public static float calculateHeight(float radius, Rect rect) {
+        float width = rect.width();
+        float height = rect.height();
+
+        float ratio = height / width;
+
+        float newHeight = radius * ratio;
+
+        return newHeight;
     }
     private void setState(State state) {
         this.state = state;
-        //srcRects = srcRectsArray[state.ordinal()];
+        String retVal = GetProperAnimation();
+        if(retVal == null)
+            return;
+
+        srcRects = player_sheet_map.get(retVal);
+    }
+
+    private String GetProperAnimation() {
+        switch (this.state)
+        {
+            case idle:
+                return "idle";
+            case drill:{
+                if(dx>0)
+                    return "drillright";
+                else if(dx < 0)
+                    return "drillleft";
+                else
+                    return "drilldown";
+            }
+            case walk: {
+                if(dx > 0)
+                    return "walkright";
+                else
+                    return "walkleft";
+            }
+            case crush:
+                break;
+            case angel:
+                break;
+            case revive:
+                break;
+            case jump:
+                break;
+            case bo:
+            case COUNT:
+                break;
+        }
+        return null;
     }
     public boolean onTouch(MotionEvent event) {
         switch (event.getAction()) {

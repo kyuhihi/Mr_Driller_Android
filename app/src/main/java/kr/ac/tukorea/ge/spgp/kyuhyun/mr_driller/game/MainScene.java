@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.Map;
 
+import kr.ac.tukorea.ge.spgp.kyuhyun.framework.objects.JoyStick;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.objects.Score;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.scene.Scene;
 import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.R;
@@ -29,6 +30,8 @@ public class MainScene extends Scene {
 
         add(Layer.bg, new Sky(R.mipmap.blue,0.f));
         add(Layer.bg, new Cloud(R.mipmap.clouds,0.4f));
+
+        add(Layer.ui, new JoyStick(R.mipmap.joystick_thumb));
 
         this.Player = new Player();
         add(Layer.player,this.Player);

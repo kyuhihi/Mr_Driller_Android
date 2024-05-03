@@ -20,8 +20,9 @@ public class MrDrillerActivity extends GameActivity {
     private void Initialize(MainScene targetMainScene)
     {
         Map<String, List<JSONObject>> player_sheet_map = JsonLoader.readAndCategorizeFrames(this, "player_sheet.json");
+
         targetMainScene.setPlayerSheet(player_sheet_map);
-        targetMainScene.Writetxt(this);
+        //targetMainScene.Writetxt(this);
     }
 
     @Override
