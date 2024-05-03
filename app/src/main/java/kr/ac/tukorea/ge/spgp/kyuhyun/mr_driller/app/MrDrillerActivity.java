@@ -16,27 +16,20 @@ import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.game.JsonLoader;
 import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.game.MainScene;
 
 public class MrDrillerActivity extends GameActivity {
-    private void Initialize()
+
+    private void Initialize(MainScene targetMainScene)
     {
-        Map<String, List<JSONObject>> categorizedFrames = JsonLoader.readAndCategorizeFrames(this, "player_sheet.json");
-
-        // 카테고리별로 프레임 출력
-        for (Map.Entry<String, List<JSONObject>> entry : categorizedFrames.entrySet()) {
-            String category = entry.getKey();
-            List<JSONObject> frames = entry.getValue();
-
-            System.out.println("Category: " + category);
-            for (JSONObject frame : frames) {
-                System.out.println("Frame: " + frame.toString());
-            }
-            System.out.println();
-        }
+        Map<String, List<JSONObject>> player_sheet_map = JsonLoader.readAndCategorizeFrames(this, "player_sheet.json");
+        targetMainScene.setPlayerSheet(player_sheet_map);
+        targetMainScene.Writetxt(this);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        new MainScene().push();
-        Initialize();
+        MainScene newMainScene =  new MainScene();
+        newMainScene.push();
+
+        Initialize(newMainScene);
     }
 }

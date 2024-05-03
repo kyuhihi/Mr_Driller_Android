@@ -1,6 +1,12 @@
 package kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.game;
 
+import android.content.Context;
 import android.view.MotionEvent;
+
+import org.json.JSONObject;
+
+import java.util.List;
+import java.util.Map;
 
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.objects.Score;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.scene.Scene;
@@ -27,6 +33,15 @@ public class MainScene extends Scene {
         this.Player = new Player();
         add(Layer.player,this.Player);
 
+    }
+    public void setPlayerSheet(Map<String, List<JSONObject>> pMap)
+    {
+        this.Player.MakeSrcRectsArray(pMap);
+
+    }
+    public void Writetxt(Context context)
+    {
+        //this.Player.writeKeysToFile(context, "player_map_keys.txt");
     }
     public void addScore(int amount) {
         score.add(amount);

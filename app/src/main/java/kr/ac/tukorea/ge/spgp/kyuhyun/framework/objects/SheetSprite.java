@@ -11,6 +11,8 @@ public class SheetSprite extends AnimSprite {
 
     @Override
     public void draw(Canvas canvas) {
+        if (srcRects ==null)
+            return;
         long now = System.currentTimeMillis();
         float time = (now - createdOn) / 1000.0f;
         int index = Math.round(time * fps) % srcRects.length;
