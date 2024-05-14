@@ -1,0 +1,17 @@
+@startuml
+class kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.game.BlockGenerator {
+- {static} String TAG
+- Random random
+- float TempTime
+- boolean bInitialize
+- void Initialize()
++ void update(float)
+- void generate()
++ void draw(Canvas)
+}
+
+
+
+
+kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IGameObject <|.. kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.game.BlockGenerator
+@enduml

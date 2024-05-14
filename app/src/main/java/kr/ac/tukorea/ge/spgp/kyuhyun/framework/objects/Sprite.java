@@ -18,6 +18,12 @@ public class Sprite implements IGameObject {
             bitmap = BitmapPool.get(mipmapId);
         }
     }
+    public Sprite(int mipmapId, float x, float y, float width, float height) {
+        if (mipmapId != 0) {
+            bitmap = BitmapPool.get(mipmapId);
+        }
+        setPosition(x, y, width, height);
+    }
 
     public void setPosition(float x, float y, float radius) {
         this.x = x;

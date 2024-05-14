@@ -138,6 +138,9 @@ public class GameView extends View implements Choreographer.FrameCallback {
         if (scene != null) {
             boolean handled = scene.onTouch(event);
             if (handled) return true;
+            else{
+                scene.RestOfTouchEvent(event);
+            }
         }
         return super.onTouchEvent(event);
     }

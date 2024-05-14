@@ -1,4 +1,6 @@
 idle_idle
+idleright_idle
+idleleft_idle
 drilldown_drill
 drillleft_drill
 drillright_drill

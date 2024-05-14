@@ -13,6 +13,7 @@ import kr.ac.tukorea.ge.spgp.kyuhyun.framework.activity.GameActivity;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IBoxCollidable;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IGameObject;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IRecyclable;
+import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.ITouchable;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.view.Metrics;
 import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.BuildConfig;
 
@@ -149,9 +150,27 @@ public class Scene {
         }
     }
 
+    protected int getTouchLayerIndex() {
+        return -1;
+    }
     public boolean onTouch(MotionEvent event) {
+        int touchLayer = getTouchLayerIndex();
+        if (touchLayer < 0) return false;
+        ArrayList<IGameObject> gameObjects = layers.get(touchLayer);
+        for (IGameObject gobj : gameObjects) {
+            if (!(gobj instanceof ITouchable)) {
+                continue;
+            }
+            boolean processed = ((ITouchable) gobj).onTouchEvent(event);
+            if (processed) return true;
+        }
         return false;
     }
+
+    public boolean RestOfTouchEvent(MotionEvent event){
+        return true;
+    }
+
 
     //////////////////////////////////////////////////
     // Overridables

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Environment;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import org.json.JSONException;
@@ -25,11 +26,14 @@ import kr.ac.tukorea.ge.spgp.kyuhyun.framework.view.Metrics;
 import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.R;
 
 public class Player extends SheetSprite implements IBoxCollidable {
+    private static final String TAG =Player.class.getSimpleName();
+
     private static Map<String, ArrayList<Rect>> player_sheet_map; //first
     private static final float RADIUS = 0.8f;
     private static final float SPEED = 5.0f;
     private static final float TARGET_RADIUS = 0.5f;
     private float targetX,targetY;
+
     private RectF targetRect = new RectF() ;
     private final RectF collisionRect = new RectF();
 
@@ -37,7 +41,11 @@ public class Player extends SheetSprite implements IBoxCollidable {
         idle, drill, walk, crush,angel, revive,jump, bo, COUNT
     }
     State state = State.idle;
+    public enum Direction{
+        Dir_Left,Dir_Right,Dir_Down,Dir_Up
+    }
 
+    Direction PlayerDir = Direction.Dir_Down;
 
 
     public void MakeSrcRectsArray(Map<String, List<JSONObject>> pMap)
@@ -127,6 +135,7 @@ public class Player extends SheetSprite implements IBoxCollidable {
             setPosition(adjx, y, RADIUS);//,calculateHeight(RADIUS,srcRects.get(index)));
         }
 
+
     }
     // Radius가 주어졌을 때, height 값을 계산하는 메서드
     public static float calculateHeight(float radius, Rect rect) {
@@ -152,7 +161,17 @@ public class Player extends SheetSprite implements IBoxCollidable {
         switch (this.state)
         {
             case idle:
-                return "idle";
+                //return "idle";
+                switch (PlayerDir)
+                {
+                    case Dir_Left:
+                        return "idleleft";
+                    case Dir_Right:
+                        return "idleright";
+                    case Dir_Down:
+                        return "idle";
+                }
+
             case drill:{
                 if(dx>0)
                     return "drillright";
@@ -187,9 +206,35 @@ public class Player extends SheetSprite implements IBoxCollidable {
             case MotionEvent.ACTION_MOVE:
                 float[] pts = Metrics.fromScreen(event.getX(), event.getY());
                 setTargetXY(pts[0],pts[1]);
+                //Log.d(TAG, "targetX : "+ targetX);
+                SetDirection();
                 return true;
         }
         return false;
+    }
+
+    public void Execute_Drill()
+    {
+        PlayerBlockIndex(this.x);
+    }
+
+    public int PlayerBlockIndex(float targetXPos){
+        float playerPosition = targetXPos; // 플레이어의 위치
+        float blockSize = 9.0f / 7.0f; // 블록의 x 사이즈
+
+        int blockIndex = (int) (playerPosition / blockSize);
+        return blockIndex;
+    }
+    private void SetDirection(){
+        int iClickIndex = PlayerBlockIndex(this.targetX);
+        int iPlayerIndex = PlayerBlockIndex(this.x);
+
+        if(iPlayerIndex < iClickIndex)
+            PlayerDir = Direction.Dir_Right;
+        else if(iPlayerIndex > iClickIndex)
+            PlayerDir = Direction.Dir_Left;
+        else
+            PlayerDir = Direction.Dir_Down;
     }
     @Override
     public RectF getCollisionRect() {
