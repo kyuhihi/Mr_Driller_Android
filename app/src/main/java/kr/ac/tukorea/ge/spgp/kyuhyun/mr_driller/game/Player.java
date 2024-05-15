@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IBoxCollidable;
+import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IGameObject;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.objects.SheetSprite;
+import kr.ac.tukorea.ge.spgp.kyuhyun.framework.scene.Scene;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.view.Metrics;
 import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.R;
 
@@ -33,14 +35,16 @@ public class Player extends SheetSprite implements IBoxCollidable {
     private static final float SPEED = 5.0f;
     private static final float TARGET_RADIUS = 0.5f;
     private float targetX,targetY;
-
+    private float jumpSpeed = 0.f;
+    private static final float JUMP_POWER = 9.0f;
+    private static final float GRAVITY = 17.0f;
     private RectF targetRect = new RectF() ;
     private final RectF collisionRect = new RectF();
 
     public enum State {
-        idle, drill, walk, crush,angel, revive,jump, bo, COUNT
+        idle, drill, walk, crush,angel, revive,jump,fall, bo, COUNT
     }
-    State state = State.idle;
+    State state = State.fall;
     public enum Direction{
         Dir_Left,Dir_Right,Dir_Down,Dir_Up
     }
@@ -63,7 +67,7 @@ public class Player extends SheetSprite implements IBoxCollidable {
                     int x = frameData.getInt("x");
                     int y = frameData.getInt("y");
                     int w = frameData.getInt("w");
-                    int h = 40;//frameData.getInt("h");
+                    int h = frameData.getInt("h");
 
                     Rect rect = new Rect(x, y, x + w, y + h);
                     rectList.add(rect);
@@ -93,11 +97,16 @@ public class Player extends SheetSprite implements IBoxCollidable {
     public Player(){
         super(R.mipmap.player_sheet,8);
 
-        setPosition(Metrics.width / 2, Metrics.height /2, RADIUS);
+        setPosition(Metrics.width / 2, 0.f/*Metrics.height /2*/, RADIUS);
         setTargetXY(x,y);
 
     }
-
+    public void jump() {
+        if (state == State.walk || state == State.idle) {
+            jumpSpeed = -JUMP_POWER;
+            setState(State.jump);
+        }
+    }
     private void setTargetXY(float x,float y) {
         targetX = Math.max(RADIUS, Math.min(x, Metrics.width - RADIUS));
         targetY = Math.max(RADIUS, Math.min(y, Metrics.height - RADIUS));
@@ -106,7 +115,8 @@ public class Player extends SheetSprite implements IBoxCollidable {
                 targetX + TARGET_RADIUS, targetY + TARGET_RADIUS
         );
     }
-    public void update(float elapsedSeconds) {
+
+    private void Walk_IdleTick(float elapsedSeconds){
         if (targetX < x) {
             dx = -SPEED;
         } else if (x < targetX) {
@@ -125,15 +135,75 @@ public class Player extends SheetSprite implements IBoxCollidable {
         if (adjx != x) {
             dx = 0;
         }
-        collisionRect.set(dstRect);
+
         if(dx == 0)
             setState(State.idle);
         else
             setState(State.walk);
 
+
         if (adjx != x) {
-            setPosition(adjx, y, RADIUS);//,calculateHeight(RADIUS,srcRects.get(index)));
+            setPosition(adjx, y, RADIUS);
         }
+    }
+
+    private void Jump_FallTick(float elapsedSeconds){
+        float dy = jumpSpeed * elapsedSeconds;
+        jumpSpeed += GRAVITY * elapsedSeconds;
+        if (jumpSpeed >= 0) { // 낙하하고 있다면 발밑에 땅이 있는지 확인한다
+            float foot = collisionRect.bottom;
+            float floor = findNearestPlatformTop(foot);
+            if (foot + dy >= floor) {
+                dy = floor - foot;
+                setState(State.idle);
+            }
+            else
+            {
+                setState(State.fall);
+            }
+        }
+        y += dy;
+        dstRect.offset(0, dy);
+    }
+    public void update(float elapsedSeconds) {
+        switch (this.state)
+        {
+            case idle:
+            case walk:
+                Walk_IdleTick(elapsedSeconds);
+                break;
+            case drill:
+                break;
+            case jump:
+            case fall:
+                if (targetX < x) {
+                    dx = -SPEED;
+                } else if (x < targetX) {
+                    dx = SPEED;
+                } else {
+                    dx = 0;
+                }
+                super.update(elapsedSeconds);
+                float adjx = x;
+                if ((dx < 0 && x < targetX) || (dx > 0 && x > targetX)) {
+                    adjx = targetX;
+                } else {
+                    adjx = Math.max(RADIUS, Math.min(x, Metrics.width - RADIUS));
+                }
+
+                if (adjx != x) {
+                    dx = 0;
+                }
+                Jump_FallTick(elapsedSeconds);
+                break;
+            case crush:
+                break;
+            case angel:
+                break;
+            case revive:
+                break;
+        }
+        collisionRect.set(dstRect);
 
 
     }
@@ -156,12 +226,39 @@ public class Player extends SheetSprite implements IBoxCollidable {
 
         srcRects = player_sheet_map.get(retVal);
     }
+    private float findNearestPlatformTop(float foot) {
+        Block platform = findNearestPlatform(foot);
+        if (platform == null) return Metrics.height;
+        return platform.getCollisionRect().top;
+    }
+    private Block findNearestPlatform(float foot) {
+        Block nearest = null;
+        MainScene scene = (MainScene) Scene.top();
+        if (scene == null) return null;
+        ArrayList<IGameObject> blocks = scene.objectsAt(MainScene.Layer.block);
+        float top = Metrics.height;
+        for (IGameObject obj: blocks) {
+            Block block = (Block) obj;
+            RectF rect = block.getCollisionRect();
+            if (rect.left > x || x > rect.right) {
+                continue;
+            }
+            if (rect.top < foot) {
+                continue;
+            }
+            if (top > rect.top) {
+                top = rect.top;
+                nearest = block;
+            }
+        }
+        return nearest;
+    }
 
     private String GetProperAnimation() {
         switch (this.state)
         {
             case idle:
-                //return "idle";
+                //return "fall";
                 switch (PlayerDir)
                 {
                     case Dir_Left:
@@ -173,12 +270,17 @@ public class Player extends SheetSprite implements IBoxCollidable {
                 }
 
             case drill:{
-                if(dx>0)
-                    return "drillright";
-                else if(dx < 0)
-                    return "drillleft";
-                else
-                    return "drilldown";
+                switch(PlayerDir)
+                {
+                    case Dir_Left:
+                        return "drillleft";
+                    case Dir_Right:
+                        return "drillright";
+                    case Dir_Down:
+                        return "drilldown";
+                    case Dir_Up:
+                        return "drillup";
+                }
             }
             case walk: {
                 if(dx > 0)
@@ -193,7 +295,9 @@ public class Player extends SheetSprite implements IBoxCollidable {
             case revive:
                 break;
             case jump:
-                break;
+               break;
+            case fall:
+                return "fall";
             case bo:
             case COUNT:
                 break;

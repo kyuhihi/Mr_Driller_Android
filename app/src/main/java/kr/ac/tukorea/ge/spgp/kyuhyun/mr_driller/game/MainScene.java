@@ -34,18 +34,24 @@ public class MainScene extends Scene {
         add(Layer.bg, new Cloud(R.mipmap.clouds,0.4f));
 
         //add(Layer.ui, new JoyStick(R.mipmap.joystick_thumb));
-
+        this.Player = new Player();
+        add(Layer.player,this.Player);
         add(Layer.touch, new Button(R.mipmap.drill_btn, 1.0f, 14.0f, 2.0f, 2.f, new Button.Callback() {
             @Override
             public boolean onTouch(Button.Action action) {
-                Log.d(TAG, "Button: Slide " + action);
-                //player.slide(action == Button.Action.pressed);
+                Player.Execute_Drill();
                 return true;
             }
         }));
+        add(Layer.touch, new Button(R.mipmap.jump_btn, 8.f, 14.0f, 2.0f, 2.f, new Button.Callback() {
+            @Override
+            public boolean onTouch(Button.Action action) {
+                Player.jump();
+                return false;
+            }
+        }));
 
-        this.Player = new Player();
-        add(Layer.player,this.Player);
+
 
     }
 
