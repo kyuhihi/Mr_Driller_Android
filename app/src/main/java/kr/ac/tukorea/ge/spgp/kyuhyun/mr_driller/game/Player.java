@@ -354,6 +354,7 @@ public class Player extends SheetSprite implements IBoxCollidable {
             if(PlayerDir == Direction.Dir_Down) {
                 float foot = collisionRect.bottom;
                 Block pBlock = findNearestPlatform(foot);
+                BlockMgr.DrillThisBlock(pBlock);
 
                 setState(State.fall);
             }

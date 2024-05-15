@@ -53,6 +53,9 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
     private static final float JUMP_POWER = 9.0f;
     private static final float GRAVITY = 17.0f;
 
+    private int m_iBlockLevelIndexY =0;
+    private int m_iBlockLevelIndexX =0;
+
     private Block(BLOCK_TYPE eblockType, int index) {
         super(resIds[0]);
         this.blockType = eblockType;
@@ -71,6 +74,21 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
     private void ChangeRandomBlockType()
     {
         bitmap = BitmapPool.get(resIds[blockType.ordinal()]);
+    }
+
+    public void SetIndex(int X, int Y)
+    {
+        m_iBlockLevelIndexY = Y;
+        m_iBlockLevelIndexX = X;
+    }
+
+    public int GetIndexX()
+    {
+        return m_iBlockLevelIndexX;
+    }
+    public int GetIndexY()
+    {
+        return m_iBlockLevelIndexY;
     }
 
     public void Initialize(Block blockInstance, int index)
@@ -113,6 +131,11 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
         }
         return nearest;
     }
+    public void SetState(BLOCK_STATE eState)
+    {
+        blockState = eState;
+    }
+
 
     @Override
     public void update(float elapsedSeconds) {
@@ -138,7 +161,7 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
 
 
         super.update(elapsedSeconds);
-        if (dstRect.top < -16.f) {
+        if (dstRect.top < -16.f || blockState == BLOCK_STATE.STATE_END) {
             Scene.top().remove(MainScene.Layer.block, this);
         }
         collisionRect.set(dstRect);
