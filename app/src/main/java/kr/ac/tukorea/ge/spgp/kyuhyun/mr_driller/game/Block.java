@@ -4,9 +4,11 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IBoxCollidable;
+import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IGameObject;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IRecyclable;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.objects.AnimSprite;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.objects.Sprite;
@@ -19,7 +21,9 @@ import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.R;
 public class Block extends Sprite implements IBoxCollidable, IRecyclable {
     private static final float RADIUS = 9 / 14.f;
     private final Rect srcRect = new Rect();
-
+    public enum BLOCK_STATE {
+        STATE_IDLE,STATE_FALL,STATE_END;
+    }
     public enum BLOCK_TYPE {
         BLOCK_BLUE, BLOCK_GREEN, BLOCK_RED, BLOCK_YELLOW, END;
 
@@ -42,6 +46,13 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
     };
     protected RectF collisionRect = new RectF();
     private BLOCK_TYPE blockType;
+
+    private BLOCK_STATE blockState  = BLOCK_STATE.STATE_IDLE;
+
+    private float jumpSpeed = 0.f;
+    private static final float JUMP_POWER = 9.0f;
+    private static final float GRAVITY = 17.0f;
+
     private Block(BLOCK_TYPE eblockType, int index) {
         super(resIds[0]);
         this.blockType = eblockType;
@@ -74,10 +85,60 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
         y=y + (RADIUS * 2 *iIndex);
         dstRect.set(dstRect.left, y - RADIUS, dstRect.right, y + RADIUS);
     }
+
+    private float findNearestPlatformTop(float foot) {
+        Block platform = findNearestPlatform(foot);
+        if (platform == null) return Metrics.height;
+        return platform.getCollisionRect().top;
+    }
+    private Block findNearestPlatform(float foot) {
+        Block nearest = null;
+        MainScene scene = (MainScene) Scene.top();
+        if (scene == null) return null;
+        ArrayList<IGameObject> blocks = scene.objectsAt(MainScene.Layer.block);
+        float top = Metrics.height;
+        for (IGameObject obj: blocks) {
+            Block block = (Block) obj;
+            RectF rect = block.getCollisionRect();
+            if (rect.left > x || x > rect.right) {
+                continue;
+            }
+            if (rect.top < foot) {
+                continue;
+            }
+            if (top > rect.top) {
+                top = rect.top;
+                nearest = block;
+            }
+        }
+        return nearest;
+    }
+
     @Override
     public void update(float elapsedSeconds) {
+        switch (blockState)
+        {
+            case STATE_IDLE:
+            case STATE_END:
+                break;
+            case STATE_FALL: {
+                float dy = jumpSpeed * elapsedSeconds;
+                jumpSpeed += GRAVITY * elapsedSeconds;
+                float foot = collisionRect.bottom;
+                float floor = findNearestPlatformTop(foot);
+                if (foot + dy >= floor) {
+                    dy = floor - foot;
+                    blockState = BLOCK_STATE.STATE_IDLE;
+                }
+                y += dy;
+                dstRect.offset(0, dy);
+                break;
+            }
+        }
+
+
         super.update(elapsedSeconds);
-        if (dstRect.top < 0) {
+        if (dstRect.top < -16.f) {
             Scene.top().remove(MainScene.Layer.block, this);
         }
         collisionRect.set(dstRect);

@@ -1,6 +1,7 @@
 package kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.game;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Environment;
@@ -51,7 +52,11 @@ public class Player extends SheetSprite implements IBoxCollidable {
 
     Direction PlayerDir = Direction.Dir_Down;
 
-
+    BlockGenerator BlockMgr;
+    public void SetBlockGenerator(BlockGenerator pGenerator)
+    {
+        BlockMgr = pGenerator;
+    }
     public void MakeSrcRectsArray(Map<String, List<JSONObject>> pMap)
     {
         player_sheet_map = new HashMap<>();
@@ -319,7 +324,8 @@ public class Player extends SheetSprite implements IBoxCollidable {
 
     public void Execute_Drill()
     {
-        PlayerBlockIndex(this.x);
+        if(State.idle == state || State.walk == state)
+            setState(State.drill);
     }
 
     public int PlayerBlockIndex(float targetXPos){
@@ -340,8 +346,32 @@ public class Player extends SheetSprite implements IBoxCollidable {
         else
             PlayerDir = Direction.Dir_Down;
     }
+    private void EndOfFrame()
+    {
+        if(this.state == State.drill)
+        {
+            //Log.d(TAG, "PlayerIn : "+ PlayerBlockIndex(this.x));
+            if(PlayerDir == Direction.Dir_Down) {
+                float foot = collisionRect.bottom;
+                Block pBlock = findNearestPlatform(foot);
+
+                setState(State.fall);
+            }
+            else
+                setState(State.idle);
+        }
+    }
+
     @Override
     public RectF getCollisionRect() {
         return collisionRect;
+    }
+    @Override
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
+        if(srcRects.size() - 1 == srcRectsIndex)
+        {
+            EndOfFrame();
+        }
     }
 }

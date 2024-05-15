@@ -26,8 +26,8 @@ public class MainScene extends Scene {
     }
     public MainScene(){
         initLayers(Layer.END);
-
-        add(Layer.controller, new BlockGenerator());
+        BlockGenerator pBlockMgr = new BlockGenerator();
+        add(Layer.controller, pBlockMgr);
         add(Layer.controller, new CollisionChecker(this));
 
         add(Layer.bg, new Sky(R.mipmap.blue,0.f));
@@ -36,6 +36,8 @@ public class MainScene extends Scene {
         //add(Layer.ui, new JoyStick(R.mipmap.joystick_thumb));
         this.Player = new Player();
         add(Layer.player,this.Player);
+
+        this.Player.SetBlockGenerator(pBlockMgr);
         add(Layer.touch, new Button(R.mipmap.drill_btn, 1.0f, 14.0f, 2.0f, 2.f, new Button.Callback() {
             @Override
             public boolean onTouch(Button.Action action) {
@@ -43,7 +45,7 @@ public class MainScene extends Scene {
                 return true;
             }
         }));
-        add(Layer.touch, new Button(R.mipmap.jump_btn, 8.f, 14.0f, 2.0f, 2.f, new Button.Callback() {
+        add(Layer.touch, new Button(R.mipmap.jump_btn, 8.f, 14.0f, 3.0f, 3.f, new Button.Callback() {
             @Override
             public boolean onTouch(Button.Action action) {
                 Player.jump();
