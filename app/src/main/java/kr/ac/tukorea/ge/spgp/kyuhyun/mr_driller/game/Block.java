@@ -44,6 +44,7 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
     private static final int[] resIds = {
             R.mipmap.block_0, R.mipmap.block_1, R.mipmap.block_2, R.mipmap.block_3
     };
+    public static  float fPlayerScrollY = 0.f;
     protected RectF collisionRect = new RectF();
     private BLOCK_TYPE blockType;
 
@@ -144,22 +145,23 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
             case STATE_IDLE:
             case STATE_END:
                 break;
-            case STATE_FALL: {
-                float dy = jumpSpeed * elapsedSeconds;
-                jumpSpeed += GRAVITY * elapsedSeconds;
-                float foot = collisionRect.bottom;
-                float floor = findNearestPlatformTop(foot);
-                if (foot + dy >= floor) {
-                    dy = floor - foot;
-                    blockState = BLOCK_STATE.STATE_IDLE;
-                }
-                y += dy;
-                dstRect.offset(0, dy);
-                break;
-            }
+//            case STATE_FALL: {
+//                float dy = jumpSpeed * elapsedSeconds;
+//                jumpSpeed += GRAVITY * elapsedSeconds;
+//                float foot = collisionRect.bottom;
+//                float floor = findNearestPlatformTop(foot);
+//                if (foot + dy >= floor) {
+//                    dy = floor - foot;
+//                    blockState = BLOCK_STATE.STATE_IDLE;
+//                }
+//                y += dy;
+//                dstRect.offset(0, dy);
+//                break;
+//            }
         }
 
-
+        y -= fPlayerScrollY;
+        setPosition(x,y,RADIUS);
         super.update(elapsedSeconds);
         if (dstRect.top < -16.f || blockState == BLOCK_STATE.STATE_END) {
             Scene.top().remove(MainScene.Layer.block, this);

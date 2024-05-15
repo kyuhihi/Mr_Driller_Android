@@ -155,6 +155,8 @@ public class Player extends SheetSprite implements IBoxCollidable {
     private void Jump_FallTick(float elapsedSeconds){
         float dy = jumpSpeed * elapsedSeconds;
         jumpSpeed += GRAVITY * elapsedSeconds;
+        if(jumpSpeed > 8.5)
+            jumpSpeed = 8.5f;
         if (jumpSpeed >= 0) { // 낙하하고 있다면 발밑에 땅이 있는지 확인한다
             float foot = collisionRect.bottom;
             float floor = findNearestPlatformTop(foot);
@@ -171,6 +173,7 @@ public class Player extends SheetSprite implements IBoxCollidable {
         dstRect.offset(0, dy);
     }
     public void update(float elapsedSeconds) {
+        Block.fPlayerScrollY =0.f;
         switch (this.state)
         {
             case idle:
@@ -208,8 +211,15 @@ public class Player extends SheetSprite implements IBoxCollidable {
             case revive:
                 break;
         }
-        collisionRect.set(dstRect);
 
+        if( (16.f /2 - y) < 0.f)
+        {
+            float subY = y - 16.f/2;
+            Block.fPlayerScrollY += subY;
+            y = 16.f /2;
+            setPosition(x,y,RADIUS);
+        }
+        collisionRect.set(dstRect);
 
     }
     // Radius가 주어졌을 때, height 값을 계산하는 메서드
@@ -355,7 +365,7 @@ public class Player extends SheetSprite implements IBoxCollidable {
                 float foot = collisionRect.bottom;
                 Block pBlock = findNearestPlatform(foot);
                 BlockMgr.DrillThisBlock(pBlock);
-
+                jumpSpeed = 0.f;
                 setState(State.fall);
             }
             else
