@@ -5,9 +5,9 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.RectF;
 
-
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.interfaces.IGameObject;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.res.BitmapPool;
+import kr.ac.tukorea.ge.spgp.kyuhyun.framework.view.Metrics;
 
 public class Score implements IGameObject {
     private final Bitmap bitmap;
@@ -48,6 +48,16 @@ public class Score implements IGameObject {
     public void draw(Canvas canvas) {
         int value = this.displayScore;
         float x = right;
+
+        if(value == 0)
+        {
+            int digit = 0;
+            srcRect.set(digit * srcCharWidth, 0, (digit + 1) * srcCharWidth, srcCharHeight);
+            x -= dstCharWidth;
+            dstRect.set(x, top, x + dstCharWidth, top + dstCharHeight);
+            canvas.drawBitmap(bitmap, srcRect, dstRect, null);
+        }
+
         while (value > 0) {
             int digit = value % 10;
             srcRect.set(digit * srcCharWidth, 0, (digit + 1) * srcCharWidth, srcCharHeight);
@@ -56,9 +66,26 @@ public class Score implements IGameObject {
             canvas.drawBitmap(bitmap, srcRect, dstRect, null);
             value /= 10;
         }
+
+        value = 500;
+
+        int iSpace = 1;
+        while (value > 0) {
+            int digit = value % 10;
+            srcRect.set(digit * srcCharWidth, 0, (digit + 1) * srcCharWidth, srcCharHeight);
+            x -= dstCharWidth;
+
+            dstRect.set(x -iSpace, top, x -iSpace + dstCharWidth, top + dstCharHeight);
+            canvas.drawBitmap(bitmap, srcRect, dstRect, null);
+            value /= 10;
+        }
     }
 
     public void add(int amount) {
         score += amount;
+    }
+
+    public int getScore() {
+        return score;
     }
 }

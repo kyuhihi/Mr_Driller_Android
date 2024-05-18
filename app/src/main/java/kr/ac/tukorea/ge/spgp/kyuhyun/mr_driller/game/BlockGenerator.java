@@ -42,7 +42,7 @@ public class BlockGenerator implements IGameObject {
         {
             float BlockBottomY = block.getCollisionRect().bottom;
             if(BlockBottomY < 16.f) {
-                generate();
+                //generate();
                 return;
             }
         }

@@ -51,7 +51,9 @@ public class Player extends SheetSprite implements IBoxCollidable {
     }
 
     Direction PlayerDir = Direction.Dir_Down;
+    public float PlayerY = 0.f;
 
+    private float MoveMaxLeft = 0.f, MoveMaxRight = Metrics.width;
     BlockGenerator BlockMgr;
     public void SetBlockGenerator(BlockGenerator pGenerator)
     {
@@ -174,11 +176,22 @@ public class Player extends SheetSprite implements IBoxCollidable {
     }
     public void update(float elapsedSeconds) {
         Block.fPlayerScrollY =0.f;
+
+        findNearestPlatformLeftRight();
+        float CenterX = collisionRect.centerX();
+        float fTopY = findNearestPlatformTop(CenterX);
+
+
         switch (this.state)
         {
             case idle:
             case walk:
+                float foot = collisionRect.bottom;
+
                 Walk_IdleTick(elapsedSeconds);
+
+
+
                 break;
             case drill:
                 break;
@@ -212,17 +225,33 @@ public class Player extends SheetSprite implements IBoxCollidable {
                 break;
         }
 
+        if(MoveMaxLeft > x) {
+            x = MoveMaxLeft ;
+            setState(State.idle);
+
+        }
+        if(MoveMaxRight < x) {
+            x = MoveMaxRight ;
+            setState(State.idle);
+        }
+        SetBlockScrollY();
+        setPosition(x,y,RADIUS);
+
+        collisionRect.set(dstRect);
+
+    }
+
+    private void SetBlockScrollY()
+    {
         if( (16.f /2 - y) < 0.f)
         {
             float subY = y - 16.f/2;
             Block.fPlayerScrollY += subY;
+            PlayerY += Block.fPlayerScrollY;
             y = 16.f /2;
-            setPosition(x,y,RADIUS);
         }
-        collisionRect.set(dstRect);
-
     }
-    // Radius가 주어졌을 때, height 값을 계산하는 메서드
+
     public static float calculateHeight(float radius, Rect rect) {
         float width = rect.width();
         float height = rect.height();
@@ -247,6 +276,7 @@ public class Player extends SheetSprite implements IBoxCollidable {
         return platform.getCollisionRect().top;
     }
     private Block findNearestPlatform(float foot) {
+        foot -=0.01f;
         Block nearest = null;
         MainScene scene = (MainScene) Scene.top();
         if (scene == null) return null;
@@ -267,6 +297,84 @@ public class Player extends SheetSprite implements IBoxCollidable {
             }
         }
         return nearest;
+    }
+
+    private void findNearestPlatformLeftRight() {
+        MainScene scene = (MainScene) Scene.top();
+        if (scene == null) return;
+        ArrayList<IGameObject> blocks = scene.objectsAt(MainScene.Layer.block);
+        float top = Metrics.height;
+
+
+        float fDistLeftX = 100.f;
+        float fDistRightX = 100.f;
+        Block pRightNearestBlock = null;
+        Block pLeftNearestBlock = null;
+        for (IGameObject obj: blocks) {
+            Block block = (Block) obj;
+            RectF rect = block.getCollisionRect();
+            if (rect.top > y || y > rect.bottom) {
+                continue;
+            }
+
+            float BlockDist = x - rect.centerX();
+            if(BlockDist > 0)
+            {//플레이어의 좌표가 더오른족이면 +
+                if(fDistLeftX > BlockDist)
+                {
+                    fDistLeftX = BlockDist;
+                    pLeftNearestBlock = block;
+                }
+            }
+            else {
+                float PlusDist = Math.abs(BlockDist);
+                if(fDistRightX > PlusDist)
+                {
+                    fDistRightX = PlusDist;
+                    pRightNearestBlock = block;
+                }
+            }
+
+        }
+        if(pLeftNearestBlock != null)
+        {
+            MoveMaxLeft = pLeftNearestBlock.getCollisionRect().right;
+        }
+        else
+            MoveMaxLeft = 0.f;
+        if(pRightNearestBlock != null)
+        {
+            MoveMaxRight = pRightNearestBlock.getCollisionRect().left;
+        }
+        else
+            MoveMaxRight = Metrics.width;
+       /* //만약 플레이어의 left가 1이야. rect right가 1보다 작으면 set.
+        if(collisionRect.left >= rect.right)
+        {
+            if(MaxLeft > rect.right)
+            {
+                MaxLeft = rect.right;
+            }
+        }
+
+        if(collisionRect.right <= rect.left)
+        {
+            if(MaxRight > rect.left)
+            {
+                MaxRight = rect.left;
+            }
+        }
+        if(iCnt != 0){
+            if(MaxLeft != 100.f){
+                MoveMaxLeft = MaxLeft;
+            }
+            if(MaxRight != 100.f){
+                MoveMaxRight = MaxRight;
+            }
+        }*/
+
+        return;
+
     }
 
     private String GetProperAnimation() {
@@ -329,7 +437,7 @@ public class Player extends SheetSprite implements IBoxCollidable {
                 SetDirection();
                 return true;
         }
-        return false;
+        return true;
     }
 
     public void Execute_Drill()
