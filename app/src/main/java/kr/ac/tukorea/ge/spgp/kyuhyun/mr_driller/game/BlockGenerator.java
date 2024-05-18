@@ -55,16 +55,14 @@ public class BlockGenerator implements IGameObject {
         int iTargetIndexX =0 ,iTargetIndexY=0;
         iTargetIndexX = pTargetBlock.GetIndexX();
         iTargetIndexY = pTargetBlock.GetIndexY();
+        Block.NeedToDeleteColor =pTargetBlock.GetBlockType();
+        pTargetBlock.SetState(Block.BLOCK_STATE.STATE_END);
         ArrayList<IGameObject> blocks = scene.objectsAt(MainScene.Layer.block);
         for(IGameObject obj :blocks){
             Block block = (Block)obj;
             block.SetState(Block.BLOCK_STATE.STATE_FALL);
 
-            int iForIndexX = 0, iForIndexY = 0;
-            if((iTargetIndexX == block.GetIndexX()) && (iTargetIndexY ==block.GetIndexY()))
-            {
-                block.SetState(Block.BLOCK_STATE.STATE_END);
-            }
+
         }
     }
 

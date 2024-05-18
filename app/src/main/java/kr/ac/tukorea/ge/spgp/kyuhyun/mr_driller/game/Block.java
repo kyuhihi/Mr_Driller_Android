@@ -15,6 +15,7 @@ import kr.ac.tukorea.ge.spgp.kyuhyun.framework.objects.Sprite;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.res.BitmapPool;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.scene.RecycleBin;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.scene.Scene;
+import kr.ac.tukorea.ge.spgp.kyuhyun.framework.util.CollisionHelper;
 import kr.ac.tukorea.ge.spgp.kyuhyun.framework.view.Metrics;
 import kr.ac.tukorea.ge.spgp.kyuhyun.mr_driller.R;
 
@@ -47,7 +48,8 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
     public static  float fPlayerScrollY = 0.f;
     protected RectF collisionRect = new RectF();
     private BLOCK_TYPE blockType;
-
+    public static BLOCK_TYPE NeedToDeleteColor = BLOCK_TYPE.END;
+    public BLOCK_TYPE GetBlockType() {return blockType;}
     private BLOCK_STATE blockState  = BLOCK_STATE.STATE_IDLE;
 
     private float jumpSpeed = 0.f;
@@ -118,6 +120,8 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
         float top = Metrics.height;
         for (IGameObject obj: blocks) {
             Block block = (Block) obj;
+            if(block.GetBlockType() == BLOCK_TYPE.END)
+                continue;
             RectF rect = block.getCollisionRect();
             if (rect.left > x || x > rect.right) {
                 continue;
@@ -134,7 +138,70 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
     }
     public void SetState(BLOCK_STATE eState)
     {
+        if(blockState == BLOCK_STATE.STATE_END|| blockType != NeedToDeleteColor)
+        {
+            return;
+        }
+
         blockState = eState;
+        if(eState == BLOCK_STATE.STATE_END)
+        {
+            MainScene scene = (MainScene) Scene.top();
+            ArrayList<IGameObject> blocks = scene.objectsAt(MainScene.Layer.block);
+            for(IGameObject obj :blocks)
+            {
+                Block TargetBlock = (Block) obj;
+                if(Math.abs(x - TargetBlock.x) < RADIUS + 0.05F)
+                {
+                    continue;
+                }
+
+
+                RectF tTargetRect= this.getCollisionRect();
+
+               /* float inset = 0.000f;
+                RectF tTargetRect_Left = new RectF();
+
+                tTargetRect_Left.set(tTargetRect.left - inset, tTargetRect.top,tTargetRect.right - inset,tTargetRect.bottom);
+                if(CollisionHelper.collides(tTargetRect_Left,TargetBlock.getCollisionRect()))
+                {
+                    TargetBlock.SetState(BLOCK_STATE.STATE_END);
+                }
+
+                RectF tTargetRect_Right = new RectF();
+                tTargetRect_Right.set(tTargetRect.left + inset, tTargetRect.top,tTargetRect.right + inset,tTargetRect.bottom);
+
+                if(CollisionHelper.collides(tTargetRect_Right,TargetBlock.getCollisionRect()))
+                {
+                    TargetBlock.SetState(BLOCK_STATE.STATE_END);
+                }
+
+                RectF tTargetRect_Top = new RectF();
+                tTargetRect_Top.set(tTargetRect.left , tTargetRect.top- inset,tTargetRect.right ,tTargetRect.bottom- inset);
+
+                if(CollisionHelper.collides(tTargetRect_Top,TargetBlock.getCollisionRect()))
+                {
+                    TargetBlock.SetState(BLOCK_STATE.STATE_END);
+                }
+
+                RectF tTargetRect_Bottom = new RectF();
+                tTargetRect_Bottom.set(tTargetRect.left , tTargetRect.top+ inset,tTargetRect.right ,tTargetRect.bottom+ inset);
+
+                if(CollisionHelper.collides(tTargetRect_Bottom,TargetBlock.getCollisionRect()))
+                {
+                    TargetBlock.SetState(BLOCK_STATE.STATE_END);
+                }
+*/
+            }
+
+               /* if (CollisionHelper.collides(enemy, bullet)) {
+                    Log.d(TAG, "Collision !!");
+                    scene.remove(MainScene.Layer.bullet, bullet);
+                    scene.remove(MainScene.Layer.enemy, enemy);
+                    //scene.addScore(enemy.getScore());
+                    break;
+                }   */
+        }
     }
 
 
@@ -164,7 +231,7 @@ public class Block extends Sprite implements IBoxCollidable, IRecyclable {
         setPosition(x,y,RADIUS);
         super.update(elapsedSeconds);
         if (dstRect.top < -16.f || blockState == BLOCK_STATE.STATE_END) {
-            Scene.top().remove(MainScene.Layer.block, this);
+            Scene.top().remove(MainScene.Layer.block, this);//이펙트 여기서 낼것.
         }
         collisionRect.set(dstRect);
     }

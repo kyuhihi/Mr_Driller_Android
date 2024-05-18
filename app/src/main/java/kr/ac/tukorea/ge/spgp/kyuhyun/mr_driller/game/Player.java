@@ -186,11 +186,7 @@ public class Player extends SheetSprite implements IBoxCollidable {
         {
             case idle:
             case walk:
-                float foot = collisionRect.bottom;
-
                 Walk_IdleTick(elapsedSeconds);
-
-
 
                 break;
             case drill:
@@ -348,30 +344,6 @@ public class Player extends SheetSprite implements IBoxCollidable {
         }
         else
             MoveMaxRight = Metrics.width;
-       /* //만약 플레이어의 left가 1이야. rect right가 1보다 작으면 set.
-        if(collisionRect.left >= rect.right)
-        {
-            if(MaxLeft > rect.right)
-            {
-                MaxLeft = rect.right;
-            }
-        }
-
-        if(collisionRect.right <= rect.left)
-        {
-            if(MaxRight > rect.left)
-            {
-                MaxRight = rect.left;
-            }
-        }
-        if(iCnt != 0){
-            if(MaxLeft != 100.f){
-                MoveMaxLeft = MaxLeft;
-            }
-            if(MaxRight != 100.f){
-                MoveMaxRight = MaxRight;
-            }
-        }*/
 
         return;
 
@@ -472,7 +444,8 @@ public class Player extends SheetSprite implements IBoxCollidable {
             if(PlayerDir == Direction.Dir_Down) {
                 float foot = collisionRect.bottom;
                 Block pBlock = findNearestPlatform(foot);
-                BlockMgr.DrillThisBlock(pBlock);
+                if(Math.abs(pBlock.getCollisionRect().centerY() - getCollisionRect().centerY())<1.5f)
+                    BlockMgr.DrillThisBlock(pBlock);
                 jumpSpeed = 0.f;
                 setState(State.fall);
             }
